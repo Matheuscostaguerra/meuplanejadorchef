@@ -1,11 +1,12 @@
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import { useApp } from "@/context/AppContext";
 import BottomNav from "@/components/BottomNav";
 import MealCard from "@/components/MealCard";
 import PremiumBadge from "@/components/PremiumBadge";
 import { MOCK_WEEK, SWAP_OPTIONS } from "@/data/mockData";
-import { ChevronDown, ShoppingCart, X } from "lucide-react";
+import { ChevronDown, ShoppingCart, X, AlertTriangle } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { filterSafeMeals, checkVariety } from "@/lib/mealValidator";
 
 const MenuPage: React.FC = () => {
   const { user, isPremium, updateUser } = useApp();
@@ -14,6 +15,31 @@ const MenuPage: React.FC = () => {
   const [swapModal, setSwapModal] = useState<string | null>(null);
   const [swapping, setSwapping] = useState(false);
   const [limitModal, setLimitModal] = useState(false);
+
+  // HARD CONSTRAINT: filter all week's meals through the validator
+  const safeWeek = useMemo(() => {
+    return MOCK_WEEK.map(day => {
+      const safeMeals = filterSafeMeals(
+        day.meals,
+        user?.restrictions || [],
+        user?.dontEat || [],
+        user?.customRestrictions || []
+      );
+      return {
+        ...day,
+        meals: safeMeals,
+        totalCalories: safeMeals.reduce((s, m) => s + m.calories, 0),
+      };
+    });
+  }, [user?.restrictions, user?.dontEat, user?.customRestrictions]);
+
+  // Variety warnings (soft constraint)
+  const varietyWarnings = useMemo(() => {
+    return checkVariety(
+      safeWeek.map(d => ({ day: d.day, meals: d.meals })),
+      user?.allowMealPrep || false
+    );
+  }, [safeWeek, user?.allowMealPrep]);
 
   const swapsLeft = (user?.maxSwaps || 3) - (user?.swapsUsed || 0);
 
@@ -43,8 +69,23 @@ const MenuPage: React.FC = () => {
         </p>
       </div>
 
+      {/* Variety warnings */}
+      {varietyWarnings.length > 0 && (
+        <div className="mx-4 mt-4 p-3 bg-accent/10 border border-accent/30 rounded-xl flex items-start gap-2">
+          <AlertTriangle className="w-4 h-4 text-accent mt-0.5 shrink-0" />
+          <div className="text-xs text-foreground">
+            <p className="font-semibold">Pouca variedade detectada</p>
+            {varietyWarnings.map(w => (
+              <p key={w.ingredient} className="text-muted-foreground mt-0.5">
+                "{w.ingredient}" aparece em {w.count} dias
+              </p>
+            ))}
+          </div>
+        </div>
+      )}
+
       <div className="px-4 mt-4 space-y-2">
-        {MOCK_WEEK.map((day, idx) => (
+        {safeWeek.map((day, idx) => (
           <div key={day.day} className="bg-card rounded-xl shadow-card overflow-hidden">
             <button
               onClick={() => setExpandedDay(expandedDay === idx ? -1 : idx)}
@@ -61,9 +102,16 @@ const MenuPage: React.FC = () => {
             </button>
             {expandedDay === idx && (
               <div className="px-4 pb-4 space-y-2 animate-fade-in">
-                {day.meals.map(meal => (
-                  <MealCard key={meal.id} meal={meal} onSwap={() => handleSwap(meal.id)} swapsLeft={isPremium ? undefined : swapsLeft} />
-                ))}
+                {day.meals.length > 0 ? (
+                  day.meals.map(meal => (
+                    <MealCard key={meal.id} meal={meal} onSwap={() => handleSwap(meal.id)} swapsLeft={isPremium ? undefined : swapsLeft} />
+                  ))
+                ) : (
+                  <div className="text-center py-6 text-muted-foreground text-sm">
+                    <p>Nenhuma refeição disponível com suas restrições.</p>
+                    <p className="text-xs mt-1">Ajuste suas preferências na conta.</p>
+                  </div>
+                )}
               </div>
             )}
           </div>

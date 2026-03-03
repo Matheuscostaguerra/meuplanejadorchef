@@ -9,6 +9,8 @@ export interface UserProfile {
   plan: UserPlan;
   goal: Goal;
   restrictions: string[];
+  dontEat: string[];
+  customRestrictions: string[];
   preferences: string[];
   mealsPerDay: number;
   cookingTime: string;
@@ -18,6 +20,7 @@ export interface UserProfile {
   swapsUsed: number;
   maxSwaps: number;
   onboardingComplete: boolean;
+  allowMealPrep: boolean;
 }
 
 interface AppContextType {
@@ -35,6 +38,8 @@ const defaultUser: UserProfile = {
   plan: "free",
   goal: "health",
   restrictions: [],
+  dontEat: [],
+  customRestrictions: [],
   preferences: ["brasileira"],
   mealsPerDay: 4,
   cookingTime: "30min",
@@ -44,6 +49,7 @@ const defaultUser: UserProfile = {
   swapsUsed: 0,
   maxSwaps: 3,
   onboardingComplete: false,
+  allowMealPrep: false,
 };
 
 const AppContext = createContext<AppContextType>({

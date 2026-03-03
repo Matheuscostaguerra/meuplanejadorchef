@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import { useApp } from "@/context/AppContext";
 import BottomNav from "@/components/BottomNav";
 import { MOCK_RECIPES } from "@/data/mockData";
@@ -6,16 +6,27 @@ import type { Recipe } from "@/data/mockData";
 import { Search, Clock, Flame, X, Lock } from "lucide-react";
 import SelectableChip from "@/components/SelectableChip";
 import PremiumBadge from "@/components/PremiumBadge";
+import { filterSafeMeals } from "@/lib/mealValidator";
 
 const RecipesPage: React.FC = () => {
-  const { isPremium } = useApp();
+  const { isPremium, user } = useApp();
   const [search, setSearch] = useState("");
   const [activeFilter, setActiveFilter] = useState<string | null>(null);
   const [selectedRecipe, setSelectedRecipe] = useState<Recipe | null>(null);
 
   const filters = ["Todas", "Rápida", "Proteica", "Fit", "Sem Glúten"];
 
-  const filtered = MOCK_RECIPES.filter(r => {
+  // HARD CONSTRAINT: filter recipes through restriction validator
+  const safeRecipes = useMemo(() => {
+    return filterSafeMeals(
+      MOCK_RECIPES.map(r => ({ ...r, ingredients: r.ingredients })),
+      user?.restrictions || [],
+      user?.dontEat || [],
+      user?.customRestrictions || []
+    ) as typeof MOCK_RECIPES;
+  }, [user?.restrictions, user?.dontEat, user?.customRestrictions]);
+
+  const filtered = safeRecipes.filter(r => {
     const matchSearch = r.name.toLowerCase().includes(search.toLowerCase());
     const matchFilter = !activeFilter || activeFilter === "Todas" || r.tags.some(t => t.toLowerCase().includes(activeFilter.toLowerCase()));
     return matchSearch && matchFilter;

@@ -25,10 +25,19 @@ const OnboardingPage: React.FC = () => {
     setter(arr.includes(item) ? arr.filter(i => i !== item) : [...arr, item]);
   };
 
+  const [allowMealPrep, setAllowMealPrep] = useState(false);
+
   const next = () => {
     if (step < 4) setStep(step + 1);
     else {
-      updateUser({ goal, restrictions, preferences, mealsPerDay, cookingTime, routine, budget, economyMode, onboardingComplete: true });
+      const customRestrictions = otherRestriction.trim()
+        ? otherRestriction.split(",").map(r => r.trim()).filter(Boolean)
+        : [];
+      updateUser({
+        goal, restrictions, dontEat, customRestrictions, preferences,
+        mealsPerDay, cookingTime, routine, budget, economyMode,
+        allowMealPrep, onboardingComplete: true,
+      });
       navigate("/today");
     }
   };
@@ -186,6 +195,16 @@ const OnboardingPage: React.FC = () => {
                     <span className="text-sm text-foreground">{r}</span>
                   </label>
                 ))}
+              </div>
+            </div>
+            <div className="flex items-center justify-between p-4 bg-card rounded-xl border border-border">
+              <div>
+                <p className="font-medium text-foreground">🔁 Aceito repetir refeições (meal prep)</p>
+                <p className="text-xs text-muted-foreground">Permite receitas repetidas na semana</p>
+              </div>
+              <div className={`w-12 h-7 rounded-full flex items-center px-1 cursor-pointer transition-colors ${allowMealPrep ? "bg-primary" : "bg-muted"}`}
+                onClick={() => setAllowMealPrep(!allowMealPrep)}>
+                <div className={`w-5 h-5 rounded-full bg-primary-foreground shadow transition-transform ${allowMealPrep ? "translate-x-5" : ""}`} />
               </div>
             </div>
           </div>

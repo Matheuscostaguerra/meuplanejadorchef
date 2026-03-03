@@ -4,10 +4,24 @@ import BottomNav from "@/components/BottomNav";
 import { MOCK_WEEK } from "@/data/mockData";
 import MealCard from "@/components/MealCard";
 import { Flame, Droplets, Wheat } from "lucide-react";
+import { filterSafeMeals } from "@/lib/mealValidator";
 
 const TodayPage: React.FC = () => {
   const { user } = useApp();
-  const today = MOCK_WEEK[new Date().getDay() === 0 ? 6 : new Date().getDay() - 1];
+  const rawToday = MOCK_WEEK[new Date().getDay() === 0 ? 6 : new Date().getDay() - 1];
+  
+  // HARD CONSTRAINT: filter out meals violating user restrictions
+  const safeMeals = filterSafeMeals(
+    rawToday.meals,
+    user?.restrictions || [],
+    user?.dontEat || [],
+    user?.customRestrictions || []
+  );
+  const today = {
+    ...rawToday,
+    meals: safeMeals,
+    totalCalories: safeMeals.reduce((s, m) => s + m.calories, 0),
+  };
   const goalLabels = { weight_loss: "Emagrecimento", health: "Saúde Geral", muscle_gain: "Ganho de Massa" };
 
   return (
