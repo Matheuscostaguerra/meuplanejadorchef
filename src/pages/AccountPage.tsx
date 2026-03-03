@@ -93,6 +93,15 @@ const AccountPage: React.FC = () => {
         </div>
       </div>
 
+      {/* Disclaimer */}
+      <div className="px-4 mt-4">
+        <div className="p-3 bg-accent/10 rounded-xl border border-accent/30">
+          <p className="text-[11px] text-muted-foreground">
+            ⚠️ O Meu Planejador Chef oferece estimativas e planejamento alimentar. Não substitui consulta com nutricionista/médico. Para condições clínicas, procure um profissional.
+          </p>
+        </div>
+      </div>
+
       {/* Logout */}
       <div className="px-4 mt-4">
         <button

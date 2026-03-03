@@ -24,7 +24,7 @@ const LoginPage: React.FC = () => {
   };
 
   const handleGuest = () => {
-    login("convidado@meumenuai.com", "guest");
+    login("convidado@meuplanejadorchef.com", "guest");
     navigate("/onboarding");
   };
 
@@ -36,7 +36,7 @@ const LoginPage: React.FC = () => {
           <div className="w-16 h-16 rounded-2xl bg-gradient-teal flex items-center justify-center mb-4 shadow-card">
             <Leaf className="w-8 h-8 text-primary-foreground" />
           </div>
-          <h1 className="text-2xl font-bold text-foreground">Meu Menu AI</h1>
+          <h1 className="text-2xl font-bold text-foreground">Meu Planejador Chef</h1>
           <p className="text-sm text-muted-foreground mt-1">Seu Assistente Pessoal de Nutrição</p>
         </div>
 
