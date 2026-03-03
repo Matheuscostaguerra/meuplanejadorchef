@@ -23,7 +23,8 @@ const MenuPage: React.FC = () => {
         day.meals,
         user?.restrictions || [],
         user?.dontEat || [],
-        user?.customRestrictions || []
+        user?.customRestrictions || [],
+        user?.acceptZeroLactose ?? true
       );
       return {
         ...day,
@@ -31,7 +32,7 @@ const MenuPage: React.FC = () => {
         totalCalories: safeMeals.reduce((s, m) => s + m.calories, 0),
       };
     });
-  }, [user?.restrictions, user?.dontEat, user?.customRestrictions]);
+  }, [user?.restrictions, user?.dontEat, user?.customRestrictions, user?.acceptZeroLactose]);
 
   // Variety warnings (soft constraint)
   const varietyWarnings = useMemo(() => {
@@ -41,7 +42,7 @@ const MenuPage: React.FC = () => {
     );
   }, [safeWeek, user?.allowMealPrep]);
 
-  const swapsLeft = (user?.maxSwaps || 3) - (user?.swapsUsed || 0);
+  const swapsLeft = (user?.maxSwaps || 5) - (user?.swapsUsed || 0);
 
   const handleSwap = (mealId: string) => {
     if (!isPremium && swapsLeft <= 0) {

@@ -219,18 +219,41 @@ function findRestrictionForIngredient(
 /**
  * Filter meals that are safe for the user's restrictions.
  */
+/**
+ * Filter meals that are safe for the user's restrictions.
+ * acceptZeroLactose: if true, allow ingredients tagged "zero lactose" / "sem lactose" variants.
+ */
 export function filterSafeMeals<T extends MealLike>(
   meals: T[],
   restrictions: string[],
   dontEat: string[] = [],
-  customRestrictions: string[] = []
+  customRestrictions: string[] = [],
+  acceptZeroLactose: boolean = true
 ): T[] {
   const forbidden = buildForbiddenList(restrictions, dontEat, customRestrictions);
   if (forbidden.length === 0) return meals;
 
   return meals.filter(meal => {
-    if (containsForbidden(meal.name, forbidden)) return false;
-    if (meal.ingredients?.some(ing => containsForbidden(ing, forbidden))) return false;
+    if (containsForbidden(meal.name, forbidden)) {
+      // If acceptZeroLactose and the only violation is lactose-related,
+      // check if name contains "zero lactose" or "sem lactose"
+      if (acceptZeroLactose && restrictions.includes("Sem Lactose")) {
+        const nameNorm = normalize(meal.name);
+        if (nameNorm.includes("zero lactose") || nameNorm.includes("sem lactose")) return true;
+      }
+      return false;
+    }
+    if (meal.ingredients) {
+      for (const ing of meal.ingredients) {
+        if (containsForbidden(ing, forbidden)) {
+          if (acceptZeroLactose && restrictions.includes("Sem Lactose")) {
+            const ingNorm = normalize(ing);
+            if (ingNorm.includes("zero lactose") || ingNorm.includes("sem lactose")) continue;
+          }
+          return false;
+        }
+      }
+    }
     return true;
   });
 }

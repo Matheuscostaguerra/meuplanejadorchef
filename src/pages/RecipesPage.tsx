@@ -22,9 +22,10 @@ const RecipesPage: React.FC = () => {
       MOCK_RECIPES.map(r => ({ ...r, ingredients: r.ingredients })),
       user?.restrictions || [],
       user?.dontEat || [],
-      user?.customRestrictions || []
+      user?.customRestrictions || [],
+      user?.acceptZeroLactose ?? true
     ) as typeof MOCK_RECIPES;
-  }, [user?.restrictions, user?.dontEat, user?.customRestrictions]);
+  }, [user?.restrictions, user?.dontEat, user?.customRestrictions, user?.acceptZeroLactose]);
 
   const filtered = safeRecipes.filter(r => {
     const matchSearch = r.name.toLowerCase().includes(search.toLowerCase());

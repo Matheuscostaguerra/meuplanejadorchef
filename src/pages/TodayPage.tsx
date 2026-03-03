@@ -15,7 +15,8 @@ const TodayPage: React.FC = () => {
     rawToday.meals,
     user?.restrictions || [],
     user?.dontEat || [],
-    user?.customRestrictions || []
+    user?.customRestrictions || [],
+    user?.acceptZeroLactose ?? true
   );
   const today = {
     ...rawToday,
