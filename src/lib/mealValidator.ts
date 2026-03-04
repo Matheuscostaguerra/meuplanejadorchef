@@ -81,6 +81,7 @@ const DONT_EAT_MAP: Record<string, string[]> = {
   "Peixe": MEAT_FISH,
   "Porco": MEAT_PORK,
   "Frutos do mar": SEAFOOD,
+  "Ovos": EGGS,
 };
 
 /**
