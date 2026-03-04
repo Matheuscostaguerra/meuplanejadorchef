@@ -45,6 +45,8 @@ const MEAT_CHICKEN = [
   "frango", "galinha", "peru", "chester", "ave",
 ];
 
+const EGGS = ["ovo", "ovos", "gema", "clara"];
+
 const MEAT_FISH = [
   "peixe", "salmão", "atum", "tilápia", "bacalhau", "sardinha",
   "merluza", "robalo", "dourado", "pescada", "filé de peixe",
@@ -79,6 +81,7 @@ const DONT_EAT_MAP: Record<string, string[]> = {
   "Peixe": MEAT_FISH,
   "Porco": MEAT_PORK,
   "Frutos do mar": SEAFOOD,
+  "Ovos": EGGS,
 };
 
 /**
