@@ -9,6 +9,8 @@ export interface Meal {
   prepTime: number;
   type: "cafe" | "almoco" | "lanche" | "jantar" | "ceia";
   image?: string;
+  portionMultiplier?: number;
+  ingredients?: string[];
 }
 
 export interface DayPlan {
