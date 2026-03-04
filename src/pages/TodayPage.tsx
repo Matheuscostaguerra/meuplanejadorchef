@@ -3,8 +3,9 @@ import { useApp } from "@/context/AppContext";
 import BottomNav from "@/components/BottomNav";
 import { MOCK_RECIPES, MOCK_WEEK } from "@/data/mockData";
 import MealCard from "@/components/MealCard";
-import { Flame, Droplets, Wheat } from "lucide-react";
+import { Flame, Droplets, Wheat, TrendingUp } from "lucide-react";
 import { buildWeeklyMenu, type PlannerPreferences } from "@/lib/menuPlanner";
+import { auditDay } from "@/lib/calorieAuditor";
 
 const TodayPage: React.FC = () => {
   const { user } = useApp();
@@ -23,7 +24,10 @@ const TodayPage: React.FC = () => {
   );
 
   const todayIndex = new Date().getDay() === 0 ? 6 : new Date().getDay() - 1;
-  const today = weekPlan[todayIndex];
+  const todayRaw = weekPlan[todayIndex];
+  const targetCalories = user?.caloricTarget || 2000;
+  const today = useMemo(() => auditDay(todayRaw, targetCalories), [todayRaw, targetCalories]);
+
   const goalLabels = { weight_loss: "Emagrecimento", health: "Saúde Geral", muscle_gain: "Ganho de Massa" };
 
   return (
@@ -36,8 +40,8 @@ const TodayPage: React.FC = () => {
         <div className="flex gap-3 mt-4">
           {[
             { label: "Calorias", value: `${today.totalCalories}`, icon: Flame },
-            { label: "Proteína", value: `${today.meals.reduce((sum, meal) => sum + meal.protein, 0)}g`, icon: Droplets },
-            { label: "Carbos", value: `${today.meals.reduce((sum, meal) => sum + meal.carbs, 0)}g`, icon: Wheat },
+            { label: "Proteína", value: `${today.totalProtein}g`, icon: Droplets },
+            { label: "Carbos", value: `${today.totalCarbs}g`, icon: Wheat },
           ].map((stat) => (
             <div key={stat.label} className="flex-1 bg-primary-foreground/15 rounded-xl p-3 text-center backdrop-blur-sm">
               <stat.icon className="w-4 h-4 text-primary-foreground/80 mx-auto mb-1" />
@@ -46,11 +50,20 @@ const TodayPage: React.FC = () => {
             </div>
           ))}
         </div>
+
+        {/* Target info */}
+        <div className="mt-3 flex items-center gap-2 text-primary-foreground/70 text-[11px]">
+          <TrendingUp className="w-3 h-3" />
+          <span>Meta: {targetCalories} kcal • Desvio: {today.deviationPercent > 0 ? "+" : ""}{today.deviationPercent}%</span>
+          {today.status === "adjusted" && <span className="bg-primary-foreground/20 px-2 py-0.5 rounded-full">ajustado</span>}
+        </div>
       </div>
 
       <div className="px-4 -mt-4 space-y-3">
         {today.meals.length > 0 ? (
-          today.meals.map((meal) => <MealCard key={meal.id} meal={meal} showSwap={false} />)
+          today.meals.map((meal) => (
+            <MealCard key={meal.id} meal={meal} portionMultiplier={meal.portionMultiplier} showSwap={false} />
+          ))
         ) : (
           <div className="bg-card rounded-xl p-4 text-sm text-muted-foreground shadow-card">Nenhuma refeição compatível encontrada para hoje.</div>
         )}
@@ -62,4 +75,3 @@ const TodayPage: React.FC = () => {
 };
 
 export default TodayPage;
-
