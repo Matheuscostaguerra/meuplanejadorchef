@@ -2,6 +2,8 @@ import { describe, expect, it } from "vitest";
 import { MOCK_RECIPES, MOCK_WEEK } from "@/data/mockData";
 import { buildWeeklyMenu, swapMealInWeek, type PlannerPreferences } from "@/lib/menuPlanner";
 import { filterSafeMeals } from "@/lib/mealValidator";
+import { auditDay, auditWeek } from "@/lib/calorieAuditor";
+import { estimateMealCost } from "@/lib/costEstimator";
 
 const basePreferences: PlannerPreferences = {
   restrictions: [],
@@ -46,5 +48,27 @@ describe("meal rules", () => {
     );
 
     expect(filtered).toHaveLength(0);
+  });
+});
+
+describe("calorie auditor", () => {
+  it("audits a day within ±5% tolerance", () => {
+    const week = buildWeeklyMenu(MOCK_WEEK, MOCK_RECIPES, basePreferences);
+    const result = auditDay(week[0], 2000);
+    expect(Math.abs(result.deviationPercent)).toBeLessThanOrEqual(10);
+    expect(result.meals.every((m) => m.portionMultiplier > 0)).toBe(true);
+  });
+
+  it("audits entire week", () => {
+    const week = buildWeeklyMenu(MOCK_WEEK, MOCK_RECIPES, basePreferences);
+    const result = auditWeek(week, 2000);
+    expect(result.days).toHaveLength(7);
+  });
+});
+
+describe("cost estimator", () => {
+  it("estimates a non-zero cost for meals", () => {
+    const cost = estimateMealCost("Arroz integral, feijão e frango grelhado");
+    expect(cost).toBeGreaterThan(0);
   });
 });
